@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Übung: Erweiterter Lückentext</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        p.instruction {
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        .dialog-container {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .dialog-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 1.2rem;
+            font-weight: 500;
+            line-height: 1.8;
+        }
+
+        .speaker {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-right: 5px;
+            min-width: 30px;
+        }
+
+        /* Styling für die Dropdown-Menüs */
+        select {
+            font-family: inherit;
+            font-size: 1.1rem;
+            padding: 4px 28px 4px 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            background-color: white;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%232c3e50' d='M0 0l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+
+        select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+        }
+
+        /* Visuelle Rückmeldung */
+        select.correct {
+            border-color: var(--success-color);
+            background-color: #f0fdf4;
+            color: #166534;
+            padding-right: 10px;
+            background-image: none;
+        }
+
+        select.wrong {
+            border-color: var(--error-color);
+            background-color: #fef2f2;
+            color: #991b1b;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            width: 200px;
+            text-align: center;
+        }
+
+        .btn-check {
+            background-color: var(--primary-color);
+        }
+
+        .btn-check:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-restart {
+            background-color: var(--text-color);
+            display: none;
+        }
+
+        .btn-restart:hover {
+            background-color: #34495e;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .feedback {
+            font-size: 1.15rem;
+            font-weight: bold;
+            text-align: center;
+            min-height: 28px;
+        }
+
+        .feedback.success { color: var(--success-color); }
+        .feedback.error { color: var(--error-color); }
+
+        /* Responsives Design */
+        @media (max-width: 550px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            h1 { font-size: 1.35rem; }
+
+            .dialog-container {
+                padding: 15px;
+                gap: 18px;
+            }
+
+            .dialog-row {
+                font-size: 1.05rem;
+            }
+
+            select {
+                font-size: 0.95rem;
+                padding: 4px 24px 4px 8px;
+                background-position: right 8px center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russisch-Übung: Lückentext (4 Sätze)</h1>
+    <p class="instruction">Wähle für jede Lücke das richtige Wort aus, um den kompletten Dialog zu vervollständigen.</p>
+
+    <div class="dialog-container">
+        <!-- Satz 1 -->
+        <div class="dialog-row">
+            <span class="speaker">1.</span>
+            <span>Привет! Как у тебя дела</span>
+            <select id="gap1">
+                <option value="" disabled selected>...</option>
+                <option value="в">в</option>
+                <option value="на">на</option>
+                <option value="к">к</option>
+            </select>
+            <span>работе?</span>
+        </div>
+
+        <!-- Satz 2 -->
+        <div class="dialog-row">
+            <span class="speaker">2.</span>
+            <span>Всё</span>
+            <select id="gap2">
+                <option value="" disabled selected>...</option>
+                <option value="хорошо">хорошо</option>
+                <option value="плохо">плохо</option>
+                <option value="тип-топ">тип-топ</option>
+            </select>
+            <span>!</span>
+        </div>
+
+        <!-- Satz 3 -->
+        <div class="dialog-row">
+            <span class="speaker">3.</span>
+            <span>А у</span>
+            <select id="gap3">
+                <option value="" disabled selected>...</option>
+                <option value="тебя">тебя</option>
+                <option value="тобой">тобой</option>
+                <option value="тебе">тебе</option>
+            </select>
+            <span>как?</span>
+        </div>
+
+        <!-- Satz 4 -->
+        <div class="dialog-row">
+            <span class="speaker">4.</span>
+            <span>У меня</span>
+            <select id="gap4">
+                <option value="" disabled selected>...</option>
+                <option value="тоже">тоже</option>
+                <option value="также">также</option>
+                <option value="ещё">ещё</option>
+            </select>
+            <span>всё отлично!</span>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="feedback" id="feedback"></div>
+        <button class="btn btn-check" id="check-btn">Überprüfen</button>
+        <button class="btn btn-restart" id="restart-btn">Neustart</button>
+    </div>
+</div>
+
+<script>
+    // Die richtigen Lösungen für alle 4 Sätze
+    const solutions = {
+        gap1: "на",
+        gap2: "тип-топ",
+        gap3: "тебя",
+        gap4: "тоже"
+    };
+
+    const dropdowns = [
+        document.getElementById('gap1'),
+        document.getElementById('gap2'),
+        document.getElementById('gap3'),
+        document.getElementById('gap4')
+    ];
+
+    const checkBtn = document.getElementById('check-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const feedback = document.getElementById('feedback');
+
+    function checkAnswers() {
+        // Prüfen, ob alle Dropdowns ausgefüllt sind
+        const anyEmpty = dropdowns.some(select => select.value === "");
+        if (anyEmpty) {
+            feedback.textContent = "Bitte fülle alle 4 Lücken aus!";
+            feedback.className = "feedback error";
+            return;
+        }
+
+        let allCorrect = true;
+
+        // Alle Dropdowns auswerten
+        dropdowns.forEach(select => {
+            const id = select.id;
+            if (select.value === solutions[id]) {
+                select.className = "correct";
+            } else {
+                select.className = "wrong";
+                allCorrect = false;
+            }
+            select.disabled = true; // Sperren nach Auswertung
+        });
+
+        // Feedback anzeigen
+        if (allCorrect) {
+            feedback.textContent = "Отлично! Alle 4 Sätze sind absolut korrekt.";
+            feedback.className = "feedback success";
+        } else {
+            feedback.textContent = "Einige Antworten sind noch nicht richtig.";
+            feedback.className = "feedback error";
+        }
+
+        checkBtn.style.display = "none";
+        restartBtn.style.display = "block";
+    }
+
+    function resetGame() {
+        dropdowns.forEach(select => {
+            select.className = "";
+            select.disabled = false;
+            select.selectedIndex = 0;
+        });
+
+        feedback.textContent = "";
+        feedback.className = "feedback";
+        checkBtn.style.display = "block";
+        restartBtn.style.display = "none";
+    }
+
+    checkBtn.addEventListener('click', checkAnswers);
+    restartBtn.addEventListener('click', resetGame);
+</script>
+
+</body>
+</html>
