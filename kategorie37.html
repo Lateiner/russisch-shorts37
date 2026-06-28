@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Übung: все vs. всё</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #cbd5e1;
+            --category-all: #34495e;
+            --category-everything: #8e44ad;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .progress {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        p.instruction {
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        /* Die aktuelle Aufgabenkarte */
+        .card-display {
+            background-color: #f8fafc;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 25px;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .sentence-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        /* Die beiden Sortierkörbe (Große Buttons für Smartphones) */
+        .basket-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .basket-btn {
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .basket-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        .basket-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .basket-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .basket-all {
+            background-color: var(--category-all);
+        }
+
+        .basket-everything {
+            background-color: var(--category-everything);
+        }
+
+        .basket-btn span {
+            font-size: 0.85rem;
+            font-weight: normal;
+            opacity: 0.85;
+        }
+
+        /* Feedback-Bereich */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            min-height: 100px;
+        }
+
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .feedback.success { color: var(--success-color); }
+        .feedback.error { color: var(--error-color); }
+
+        .btn-restart {
+            background-color: var(--text-color);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            display: none;
+        }
+        .btn-restart:hover {
+            background-color: #34495e;
+        }
+
+        /* Responsivität */
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px 15px;
+            }
+            h1 { font-size: 1.3rem; }
+            .sentence-text { font-size: 1.1rem; }
+            .basket-container {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .basket-btn {
+                padding: 15px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Kategoriensortierung: все vs. всё</h1>
+    <div class="progress" id="progress-text">Satz 1 von 6</div>
+    <p class="instruction">Bedeutet das geschriebene Wort im Satz <b>„alle (Personen)“</b> oder <b>„alles (Dinge/Zustände)“</b>? Klicke auf den richtigen Korb.</p>
+
+    <div class="card-display">
+        <div class="sentence-text" id="sentence-text">Lädt...</div>
+    </div>
+
+    <div class="basket-container">
+        <button class="basket-btn basket-all" id="btn-all">
+            все
+            <span>= alle (Plural)</span>
+        </button>
+        <button class="basket-btn basket-everything" id="btn-everything">
+            всё / все
+            <span>= alles (Neutral)</span>
+        </button>
+    </div>
+
+    <div class="controls">
+        <div class="feedback" id="feedback-text"></div>
+        <button class="btn-restart" id="restart-btn">Neustart</button>
+    </div>
+</div>
+
+<script>
+    // Aufgabenpool mit Fokus auf den Kontext, da im Alltag oft die Punkte fehlen
+    const tasks = [
+        {
+            sentence: "Все слышали эту фразу?",
+            type: "all",
+            explanation: "Richtig! „Все“ bedeutet hier „alle“ (Personen): Haben alle diese Phrase gehört?"
+        },
+        {
+            sentence: "Всё тип-топ!",
+            type: "everything",
+            explanation: "Richtig! „Всё“ bedeutet „alles“: Alles ist tipptopp!"
+        },
+        {
+            sentence: "У меня все хорошо.",
+            type: "everything",
+            explanation: "Richtig! Auch ohne Punkte (все) bedeutet es hier im Kontext „alles“: Bei mir ist alles gut."
+        },
+        {
+            sentence: "Привет всем! Как дела?",
+            type: "all",
+            explanation: "Richtig! „Всем“ ist die Dativ-Form von „все“ (alle): Hallo an alle!"
+        },
+        {
+            sentence: "Я знаю все.",
+            type: "everything",
+            explanation: "Richtig! Im Alltag ohne Punkte geschrieben, meint es hier: Ich weiß alles."
+        },
+        {
+            sentence: "Все работают сегодня.",
+            type: "all",
+            explanation: "Richtig! Hier sind Personen gemeint: Alle arbeiten heute."
+        }
+    ];
+
+    let shuffledTasks = [];
+    let currentIndex = 0;
+
+    const sentenceText = document.getElementById('sentence-text');
+    const progressText = document.getElementById('progress-text');
+    const btnAll = document.getElementById('btn-all');
+    const btnEverything = document.getElementById('btn-everything');
+    const feedbackText = document.getElementById('feedback-text');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function initGame() {
+        currentIndex = 0;
+        restartBtn.style.display = "none";
+        btnAll.style.display = "flex";
+        btnEverything.style.display = "flex";
+        
+        // Sätze frisch mischen
+        shuffledTasks = [...tasks].sort(() => Math.random() - 0.5);
+        loadTask();
+    }
+
+    function loadTask() {
+        feedbackText.textContent = "";
+        feedbackText.className = "feedback";
+        btnAll.disabled = false;
+        btnEverything.disabled = false;
+
+        progressText.textContent = `Satz ${currentIndex + 1} von ${shuffledTasks.length}`;
+        sentenceText.textContent = shuffledTasks[currentIndex].sentence;
+    }
+
+    function handleChoice(selectedType) {
+        btnAll.disabled = true;
+        btnEverything.disabled = true;
+
+        const currentTask = shuffledTasks[currentIndex];
+
+        if (selectedType === currentTask.type) {
+            feedbackText.textContent = "Правильно! " + currentTask.explanation;
+            feedbackText.className = "feedback success";
+        } else {
+            feedbackText.textContent = "Nicht ganz. " + currentTask.explanation;
+            feedbackText.className = "feedback error";
+        }
+
+        // Nach kurzer Pause zum nächsten Satz springen
+        setTimeout(() => {
+            if (currentIndex < shuffledTasks.length - 1) {
+                currentIndex++;
+                loadTask();
+            } else {
+                // Ende der Übung
+                progressText.textContent = "Übung abgeschlossen!";
+                sentenceText.textContent = "Hervorragend! Du hast den Unterschied im Kontext gemeistert.";
+                btnAll.style.display = "none";
+                btnEverything.style.display = "none";
+                feedbackText.textContent = "";
+                restartBtn.style.display = "block";
+            }
+        }, 3000);
+    }
+
+    btnAll.addEventListener('click', () => handleChoice('all'));
+    btnEverything.addEventListener('click', () => handleChoice('everything'));
+    restartBtn.addEventListener('click', initGame);
+
+    // Spiel direkt starten
+    initGame();
+</script>
+
+</body>
+</html>
