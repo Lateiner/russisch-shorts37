@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Übung: Multiple-Choice</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #e4e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .question-box {
+            background-color: #eaf2f8;
+            border-left: 5px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            background-color: #f1f2f6;
+            border: 2px solid var(--border-color);
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary-color);
+            background-color: #eaf2f8;
+        }
+
+        /* Zustände nach dem Klicken */
+        .option-btn.correct {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--error-color);
+            border-color: var(--error-color);
+            color: white;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .footer-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            min-height: 90px;
+        }
+
+        .feedback {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .feedback.correct-text {
+            color: var(--success-color);
+        }
+
+        .feedback.wrong-text {
+            color: var(--error-color);
+        }
+
+        .btn-restart {
+            background-color: var(--text-color);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            font-weight: 600;
+            display: none; /* Wird erst nach Beantwortung angezeigt */
+        }
+
+        .btn-restart:hover {
+            background-color: #34495e;
+        }
+
+        .btn-restart:active {
+            transform: scale(0.98);
+        }
+
+        /* Responsives Design für kleinere Bildschirme */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            .question-box {
+                padding: 15px;
+            }
+
+            .question-text {
+                font-size: 1.1rem;
+            }
+
+            .option-btn {
+                padding: 14px 16px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russisch-Übung: Bedeutung verstehen</h1>
+    
+    <div class="question-box">
+        <p class="question-text">Was bedeutet die Phrase „всё тип-топ“?</p>
+    </div>
+
+    <div class="options-list" id="options-container">
+        <!-- Buttons werden dynamisch per JavaScript erzeugt -->
+    </div>
+
+    <div class="footer-controls">
+        <div class="feedback" id="feedback"></div>
+        <button class="btn-restart" id="restart-btn">Neustart</button>
+    </div>
+</div>
+
+<script>
+    // Definition der Antwortoptionen
+    const optionsData = [
+        { text: "A) Es gibt Probleme.", isCorrect: false },
+        { text: "B) Alles ist super/in Ordnung.", isCorrect: true },
+        { text: "C) Ich habe keine Zeit.", isCorrect: false }
+    ];
+
+    const optionsContainer = document.getElementById('options-container');
+    const feedback = document.getElementById('feedback');
+    const restartBtn = document.getElementById('restart-btn');
+
+    // Funktion zur Initialisierung/Zufallsmischung der Optionen (außer den Buchstaben-Präfixen)
+    function initQuestion() {
+        optionsContainer.innerHTML = '';
+        feedback.textContent = '';
+        feedback.className = 'feedback';
+        restartBtn.style.display = 'none';
+
+        // Optionen mischen, damit es spannend bleibt
+        const shuffledOptions = [...optionsData].sort(() => Math.random() - 0.5);
+
+        shuffledOptions.forEach(option => {
+            const button = document.createElement('button');
+            button.className = 'option-btn';
+            button.textContent = option.text;
+            
+            button.addEventListener('click', () => handleAnswer(button, option.isCorrect));
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    // Auswertungs-Logik beim Klick
+    function handleAnswer(selectedButton, isCorrect) {
+        const allButtons = document.querySelectorAll('.option-btn');
+        
+        // Alle Buttons nach der Auswahl deaktivieren
+        allButtons.forEach(btn => btn.disabled = true);
+
+        if (isCorrect) {
+            selectedButton.classList.add('correct');
+            feedback.textContent = "Отлично! Das ist absolut richtig.";
+            feedback.classList.add('correct-text');
+        } else {
+            selectedButton.classList.add('wrong');
+            feedback.textContent = "Schade, das stimmt nicht. Versuche es noch einmal!";
+            feedback.classList.add('wrong-text');
+
+            // Richtige Option zur Hilfe grün hervorheben
+            allButtons.forEach(btn => {
+                // Finde heraus, welches die richtige Antwort im Array war
+                const originalData = optionsData.find(o => o.text === btn.textContent);
+                if (originalData && originalData.isCorrect) {
+                    btn.classList.add('correct');
+                }
+            });
+        }
+
+        // Neustart-Button sichtbar machen
+        restartBtn.style.display = 'block';
+    }
+
+    // Event Listener für den Neustart
+    restartBtn.addEventListener('click', initQuestion);
+
+    // Erstmaliger Start der Übung
+    initQuestion();
+</script>
+
+</body>
+</html>
