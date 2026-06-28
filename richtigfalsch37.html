@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Übung: Richtig oder Falsch?</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .progress {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        /* Box für die aktuelle Behauptung */
+        .statement-box {
+            background-color: #f8fafc;
+            border-left: 5px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .statement-text {
+            font-size: 1.15rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Große, mobilfreundliche Buttons */
+        .tf-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn-tf {
+            padding: 18px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            background: #f1f2f6;
+            transition: all 0.2s ease;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-true:hover:not(:disabled) {
+            background-color: #e8f8f5;
+            border-color: var(--success-color);
+            color: #117a65;
+        }
+
+        .btn-false:hover:not(:disabled) {
+            background-color: #fdedec;
+            border-color: var(--error-color);
+            color: #922b21;
+        }
+
+        /* Farb-Feedback nach Auswahl */
+        .btn-tf.correct-choice {
+            background-color: var(--success-color) !important;
+            color: white !important;
+            border-color: var(--success-color) !important;
+        }
+
+        .btn-tf.wrong-choice {
+            background-color: var(--error-color) !important;
+            color: white !important;
+            border-color: var(--error-color) !important;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            min-height: 100px;
+        }
+
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .feedback.success { color: var(--success-color); }
+        .feedback.error { color: var(--error-color); }
+
+        .btn-restart {
+            background-color: var(--text-color);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            display: none; /* Wird am Ende eingeblendet */
+        }
+        .btn-restart:hover {
+            background-color: #34495e;
+        }
+
+        /* Responsives Design für kleinere Smartphones */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px 15px;
+            }
+            h1 { font-size: 1.3rem; }
+            .statement-text { font-size: 1rem; }
+            .btn-tf { padding: 14px; font-size: 1.05rem; }
+            .feedback { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russisch-Übung: Richtig oder Falsch?</h1>
+    <div class="progress" id="progress-text">Frage 1 von 5</div>
+    
+    <div class="statement-box">
+        <p class="statement-text" id="statement-text">Lädt...</p>
+    </div>
+
+    <div class="tf-buttons">
+        <button class="btn-tf btn-true" id="btn-true">Richtig</button>
+        <button class="btn-tf btn-false" id="btn-false">Falsch</button>
+    </div>
+
+    <div class="controls">
+        <div class="feedback" id="feedback-text"></div>
+        <button class="btn-restart" id="restart-btn">Neustart</button>
+    </div>
+</div>
+
+<script>
+    // Datenpool mit 5 unterschiedlichen Behauptungen und Erklärungen
+    const questions = [
+        {
+            text: "Die Phrase „всё тип-топ“ bedeutet, dass man viele Probleme hat.",
+            isTrue: false,
+            explanation: "Falsch! „Всё тип-топ“ bedeutet das genaue Gegenteil: Alles ist bestens und ohne Probleme."
+        },
+        {
+            text: "Der Ausdruck „всё тип-топ“ entspricht exakt dem deutschen „alles tipptopp“.",
+            isTrue: true,
+            explanation: "Правильно! Die Redewendungen haben exakt dieselbe Bedeutung und Verwendung."
+        },
+        {
+            text: "Auf die Frage „Как у тебя дела на работе?“ kann man mit „Всё тип-топ!“ antworten.",
+            isTrue: true,
+            explanation: "Правильно! Es ist eine perfekte, lockere Antwort auf Fragen nach dem Befinden im Job."
+        },
+        {
+            text: "Der Ausdruck „всё тип-топ“ ist sehr formell und sollte in Briefen an den Chef genutzt werden.",
+            isTrue: false,
+            explanation: "Falsch! Der Ausdruck ist umgangssprachlich und gehört in den lockeren Alltag."
+        },
+        {
+            text: "Im Alltag schreiben Russen statt des Buchstabens „ё“ in „всё“ oft einfach ein „е“.",
+            isTrue: true,
+            explanation: "Правильно! In der Praxis wird das „ё“ häufig ohne Punkte als „все“ geschrieben."
+        }
+    ];
+
+    let currentIndex = 0;
+
+    const statementText = document.getElementById('statement-text');
+    const progressText = document.getElementById('progress-text');
+    const btnTrue = document.getElementById('btn-true');
+    const btnFalse = document.getElementById('btn-false');
+    const feedbackText = document.getElementById('feedback-text');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function loadQuestion() {
+        feedbackText.textContent = "";
+        feedbackText.className = "feedback";
+        
+        btnTrue.className = "btn-tf btn-true";
+        btnFalse.className = "btn-tf btn-false";
+        btnTrue.disabled = false;
+        btnFalse.disabled = false;
+
+        progressText.textContent = `Frage ${currentIndex + 1} von ${questions.length}`;
+        statementText.textContent = questions[currentIndex].text;
+    }
+
+    function handleSelection(selectedTrueValue, clickedButton, otherButton) {
+        btnTrue.disabled = true;
+        btnFalse.disabled = true;
+
+        const currentQ = questions[currentIndex];
+        const isCorrect = (selectedTrueValue === currentQ.isTrue);
+
+        if (isCorrect) {
+            clickedButton.classList.add('correct-choice');
+            feedbackText.textContent = currentQ.explanation;
+            feedbackText.className = "feedback success";
+        } else {
+            clickedButton.classList.add('wrong-choice');
+            otherButton.classList.add('correct-choice');
+            feedbackText.textContent = currentQ.explanation;
+            feedbackText.className = "feedback error";
+        }
+
+        // Warte kurz und lade die nächste Frage, oder beende das Quiz
+        setTimeout(() => {
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            } else {
+                // Quiz beendet
+                progressText.textContent = "Übung abgeschlossen!";
+                statementText.textContent = "Du hast alle Fragen beantwortet! Отлично!";
+                btnTrue.style.display = "none";
+                btnFalse.style.display = "none";
+                feedbackText.textContent = "";
+                restartBtn.style.display = "block";
+            }
+        }, 3500); // 3.5 Sekunden Zeit zum Lesen des Feedbacks
+    }
+
+    function resetQuiz() {
+        currentIndex = 0;
+        btnTrue.style.display = "block";
+        btnFalse.style.display = "block";
+        restartBtn.style.display = "none";
+        loadQuestion();
+    }
+
+    btnTrue.addEventListener('click', () => handleSelection(true, btnTrue, btnFalse));
+    btnFalse.addEventListener('click', () => handleSelection(false, btnFalse, btnTrue));
+    restartBtn.addEventListener('click', resetQuiz);
+
+    // Initialer Start
+    loadQuestion();
+</script>
+
+</body>
+</html>
