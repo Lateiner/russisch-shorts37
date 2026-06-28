@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Übung: Zuordnungsaufgabe</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        p.instruction {
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        .matching-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .item {
+            background: #f1f2f6;
+            border: 2px solid #e4e7eb;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 1.05rem;
+            transition: all 0.2s ease;
+            user-select: none;
+            min-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .column-ru .item {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Zustände */
+        .item:hover {
+            border-color: var(--primary-color);
+            background: #eaf2f8;
+        }
+
+        .item.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: scale(1.02);
+        }
+
+        .item.matched {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+            cursor: default;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .item.error {
+            background: var(--error-color);
+            color: white;
+            border-color: var(--error-color);
+        }
+
+        .footer-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feedback {
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-height: 30px;
+            color: var(--success-color);
+            text-align: center;
+        }
+
+        .btn-restart {
+            background-color: var(--text-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            font-weight: 600;
+        }
+
+        .btn-restart:hover {
+            background-color: #34495e;
+        }
+
+        .btn-restart:active {
+            transform: scale(0.98);
+        }
+
+        /* Responsives Design für Smartphones */
+        @media (max-width: 600px) {
+            .matching-grid {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            .item {
+                padding: 12px;
+                font-size: 0.95rem;
+                min-height: 50px;
+            }
+            
+            .column-ru {
+                border-bottom: 2px dashed #e4e7eb;
+                padding-bottom: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russisch-Übung: Vokabeln zuordnen</h1>
+    <p class="instruction">Tippe zuerst ein russisches Element und danach die passende deutsche Übersetzung an.</p>
+
+    <div class="matching-grid">
+        <!-- Russische Spalte -->
+        <div class="column column-ru" id="ru-col"></div>
+        <!-- Deutsche Spalte -->
+        <div class="column column-de" id="de-col"></div>
+    </div>
+
+    <div class="footer-controls">
+        <div class="feedback" id="feedback"></div>
+        <button class="btn-restart" id="restart-btn">Neustart</button>
+    </div>
+</div>
+
+<script>
+    const data = [
+        { id: 1, ru: "Как у тебя дела на работе?", de: "Wie läuft's bei dir auf der Arbeit?" },
+        { id: 2, ru: "Всё тип-топ!", de: "Alles tipptopp!" },
+        { id: 3, ru: "А у тебя как?", de: "Und bei dir so?" },
+        { id: 4, ru: "Привет!", de: "Hallo!" }
+    ];
+
+    let selectedRu = null;
+    let selectedDe = null;
+    let matchedCount = 0;
+
+    const ruCol = document.getElementById('ru-col');
+    const deCol = document.getElementById('de-col');
+    const feedback = document.getElementById('feedback');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function initGame() {
+        // Altes Spielfeld leeren
+        ruCol.innerHTML = '';
+        deCol.innerHTML = '';
+        feedback.textContent = '';
+        selectedRu = null;
+        selectedDe = null;
+        matchedCount = 0;
+
+        const shuffledRu = shuffle([...data]);
+        const shuffledDe = shuffle([...data]);
+
+        // Russische Karten erstellen
+        shuffledRu.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.textContent = item.ru;
+            div.dataset.id = item.id;
+            div.addEventListener('click', () => selectItem(div, 'ru'));
+            ruCol.appendChild(div);
+        });
+
+        // Deutsche Karten erstellen
+        shuffledDe.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.textContent = item.de;
+            div.dataset.id = item.id;
+            div.addEventListener('click', () => selectItem(div, 'de'));
+            deCol.appendChild(div);
+        });
+    }
+
+    function selectItem(element, lang) {
+        if (element.classList.contains('matched')) return;
+
+        if (lang === 'ru') {
+            if (selectedRu) selectedRu.classList.remove('selected');
+            selectedRu = element;
+            selectedRu.classList.add('selected');
+        } else {
+            if (selectedDe) selectedDe.classList.remove('selected');
+            selectedDe = element;
+            selectedDe.classList.add('selected');
+        }
+
+        if (selectedRu && selectedDe) {
+            checkMatch();
+        }
+    }
+
+    function checkMatch() {
+        if (selectedRu.dataset.id === selectedDe.dataset.id) {
+            selectedRu.classList.remove('selected');
+            selectedDe.classList.remove('selected');
+            selectedRu.classList.add('matched');
+            selectedDe.classList.add('matched');
+            
+            selectedRu = null;
+            selectedDe = null;
+            matchedCount++;
+
+            if (matchedCount === data.length) {
+                feedback.textContent = "Отлично! Alles richtig gelöst!";
+            }
+        } else {
+            const tempRu = selectedRu;
+            const tempDe = selectedDe;
+            
+            tempRu.classList.add('error');
+            tempDe.classList.add('error');
+
+            selectedRu.classList.remove('selected');
+            selectedDe.classList.remove('selected');
+            selectedRu = null;
+            selectedDe = null;
+
+            setTimeout(() => {
+                tempRu.classList.remove('error');
+                tempDe.classList.remove('error');
+            }, 800);
+        }
+    }
+
+    // Event Listener für den Neustart-Button
+    restartBtn.addEventListener('click', initGame);
+
+    // Erster Start des Spiels
+    initGame();
+</script>
+
+</body>
+</html>
