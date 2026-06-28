@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Übung: Dialog sortieren</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        p.instruction {
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        /* Liste für den Dialog */
+        .sortable-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* Einzelne Zeile */
+        .dialog-item {
+            display: flex;
+            align-items: center;
+            background-color: #f8fafc;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            gap: 15px;
+            transition: all 0.2s ease;
+        }
+
+        /* Pfeiltasten-Box */
+        .arrow-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .btn-arrow {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            width: 36px;
+            height: 32px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.1s ease;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-arrow:hover:not(:disabled) {
+            background-color: #eaf2f8;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Textinhalt der Zeile */
+        .text-content {
+            font-size: 1.1rem;
+            font-weight: 500;
+            flex-grow: 1;
+        }
+
+        /* Status-Farben */
+        .dialog-item.correct {
+            border-color: var(--success-color);
+            background-color: #f0fdf4;
+        }
+
+        .dialog-item.wrong {
+            border-color: var(--error-color);
+            background-color: #fef2f2;
+        }
+
+        /* Kontroll-Buttons unten */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-action {
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            width: 200px;
+            text-align: center;
+        }
+
+        .btn-check {
+            background-color: var(--primary-color);
+        }
+
+        .btn-check:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-restart {
+            background-color: var(--text-color);
+            display: none;
+        }
+
+        .btn-restart:hover {
+            background-color: #34495e;
+        }
+
+        .feedback {
+            font-size: 1.15rem;
+            font-weight: bold;
+            text-align: center;
+            min-height: 28px;
+        }
+        .feedback.success { color: var(--success-color); }
+        .feedback.error { color: var(--error-color); }
+
+        /* Responsive Anpassung für Smartphones */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px 15px;
+            }
+            h1 { font-size: 1.3rem; }
+            .text-content { font-size: 0.95rem; }
+            .btn-arrow { width: 32px; height: 28px; font-size: 1rem; }
+            .dialog-item { padding: 10px; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russisch-Übung: Dialog ordnen</h1>
+    <p class="instruction">Nutze die Pfeiltasten (▲ und ▼), um die Sätze in die logisch richtige Reihenfolge zu bringen.</p>
+
+    <div class="sortable-list" id="dialog-list">
+        <!-- Zeilen werden per JS dynamisch generiert -->
+    </div>
+
+    <div class="controls">
+        <div class="feedback" id="feedback"></div>
+        <button class="btn-action btn-check" id="check-btn">Überprüfen</button>
+        <button class="btn-restart btn-action" id="restart-btn">Neustart</button>
+    </div>
+</div>
+
+<script>
+    // Die korrekte Reihenfolge (ID gibt die richtige finale Position von 0-2 an)
+    const initialDialog = [
+        { id: 0, text: "Привет! Как у тебя дела на работе?" }, // Zeile B
+        { id: 1, text: "Всё тип-топ! А у тебя как?" },       // Zeile A
+        { id: 2, text: "У меня тоже всё хорошо." }             // Zeile C
+    ];
+
+    let currentOrder = [];
+
+    const listContainer = document.getElementById('dialog-list');
+    const checkBtn = document.getElementById('check-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const feedback = document.getElementById('feedback');
+
+    function initGame() {
+        feedback.textContent = "";
+        feedback.className = "feedback";
+        checkBtn.style.display = "block";
+        restartBtn.style.display = "none";
+
+        // Kopieren und so lange mischen, bis es nicht zufällig direkt richtig ist
+        currentOrder = [...initialDialog];
+        while (currentOrder.every((val, i) => val.id === i)) {
+            currentOrder.sort(() => Math.random() - 0.5);
+        }
+
+        renderList();
+    }
+
+    function renderList(disabled = false) {
+        listContainer.innerHTML = '';
+
+        currentOrder.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'dialog-item';
+            row.dataset.id = item.id;
+
+            // Pfeiltasten-Steuerung
+            const controlsDiv = document.createElement('div');
+            controlsDiv.className = 'arrow-controls';
+
+            const upBtn = document.createElement('button');
+            upBtn.className = 'btn-arrow';
+            upBtn.textContent = '▲';
+            upBtn.disabled = disabled || index === 0;
+            upBtn.addEventListener('click', () => moveItem(index, -1));
+
+            const downBtn = document.createElement('button');
+            downBtn.className = 'btn-arrow';
+            downBtn.textContent = '▼';
+            downBtn.disabled = disabled || index === currentOrder.length - 1;
+            downBtn.addEventListener('click', () => moveItem(index, 1));
+
+            controlsDiv.appendChild(upBtn);
+            controlsDiv.appendChild(downBtn);
+
+            // Text
+            const textDiv = document.createElement('div');
+            textDiv.className = 'text-content';
+            textDiv.textContent = item.text;
+
+            row.appendChild(controlsDiv);
+            row.appendChild(textDiv);
+            listContainer.appendChild(row);
+        });
+    }
+
+    // Tausch-Logik für die Positionen
+    function moveItem(index, direction) {
+        const targetIndex = index + direction;
+        if (targetIndex < 0 || targetIndex >= currentOrder.length) return;
+
+        // Positionen im Array tauschen
+        const temp = currentOrder[index];
+        currentOrder[index] = currentOrder[targetIndex];
+        currentOrder[targetIndex] = temp;
+
+        renderList();
+    }
+
+    // Auswertung
+    function checkOrder() {
+        const rows = listContainer.querySelectorAll('.dialog-item');
+        let allCorrect = true;
+
+        rows.forEach((row, index) => {
+            const correctId = parseInt(row.dataset.id);
+            if (correctId === index) {
+                row.classList.add('correct');
+            } else {
+                row.classList.add('wrong');
+                allCorrect = false;
+            }
+        });
+
+        // Tasten einfrieren
+        renderList(true);
+
+        if (allCorrect) {
+            feedback.textContent = "Отлично! Der Dialog ergibt so absolut Sinn.";
+            feedback.className = "feedback success";
+        } else {
+            feedback.textContent = "Die Reihenfolge stimmt noch nicht ganz.";
+            feedback.className = "feedback error";
+        }
+
+        checkBtn.style.display = "none";
+        restartBtn.style.display = "block";
+    }
+
+    checkBtn.addEventListener('click', checkOrder);
+    restartBtn.addEventListener('click', initGame);
+
+    // Initialer Start
+    initGame();
+</script>
+
+</body>
+</html>
