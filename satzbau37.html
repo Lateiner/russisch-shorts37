@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Übung: Schüttelsätze</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        .progress {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        p.instruction {
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        /* Das Board, wo die richtigen Wörter landen */
+        .sentence-board {
+            background: #f8fafc;
+            border: 2px dashed var(--border-color);
+            min-height: 70px;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* Der Pool mit den anklickbaren Kacheln */
+        .word-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+            min-height: 60px;
+        }
+
+        /* Die einzelnen Wort-Kacheln */
+        .word-tile {
+            background: #ffffff;
+            border: 2px solid var(--border-color);
+            padding: 10px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 500;
+            user-select: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            display: inline-block;
+        }
+
+        .word-pool .word-tile:hover:not(.used) {
+            border-color: var(--primary-color);
+            background: #eaf2f8;
+            transform: translateY(-1px);
+        }
+
+        /* Zustand auf dem oberen Board (fest verankert) */
+        .sentence-board .word-tile {
+            background: #e8f8f5;
+            border-color: var(--success-color);
+            color: #117a65;
+            cursor: default;
+        }
+
+        /* Versteckt die Kachel im unteren Pool, wenn sie oben festsitzt */
+        .word-tile.used {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Visuelles Fehler-Feedback (leuchtet kurz auf) */
+        .word-tile.error-shake {
+            background-color: var(--error-color) !important;
+            border-color: var(--error-color) !important;
+            color: white !important;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .feedback {
+            font-size: 1.15rem;
+            font-weight: bold;
+            text-align: center;
+            min-height: 28px;
+            color: var(--success-color);
+        }
+
+        .btn-restart {
+            background-color: var(--text-color);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-weight: 600;
+        }
+
+        .btn-restart:hover {
+            background-color: #34495e;
+        }
+
+        .btn-restart:active {
+            transform: scale(0.98);
+        }
+
+        /* Responsives Design für Smartphones */
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            h1 { font-size: 1.3rem; }
+
+            .word-tile {
+                font-size: 0.95rem;
+                padding: 8px 14px;
+            }
+
+            .sentence-board {
+                min-height: 60px;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russisch-Übung: Sätze bauen</h1>
+    <div class="progress" id="progress-text">Satz 1 von 5</div>
+    <p class="instruction">Klicke die Wörter in der richtigen Reihenfolge an, um den russischen Satz zu bilden.</p>
+    
+    <div class="sentence-board" id="sentence-board"></div>
+    <div class="word-pool" id="word-pool"></div>
+
+    <div class="controls">
+        <div class="feedback" id="feedback"></div>
+        <button class="btn-restart" id="restart-btn">Neustart</button>
+    </div>
+</div>
+
+<script>
+    // Die 5 Sätze basierend auf der gelernten Anleitung
+    const sentences = [
+        { correct: ["Как", "у", "тебя", "дела", "на", "работе?"] },
+        { correct: ["Всё", "тип-топ!"] },
+        { correct: ["А", "у", "тебя", "как?"] },
+        { correct: ["Привет!", "Все", "слышали", "эту", "фразу?"] },
+        { correct: ["Напишите", "об", "этом", "в", "комментариях."] }
+    ];
+
+    let currentSentenceIndex = 0;
+    let currentWordIndex = 0; // Welches Wort (Index) wird als nächstes oben erwartet?
+    let activeSentence = [];
+
+    const board = document.getElementById('sentence-board');
+    const pool = document.getElementById('word-pool');
+    const feedback = document.getElementById('feedback');
+    const progressText = document.getElementById('progress-text');
+    const restartBtn = document.getElementById('restart-btn');
+
+    // Shuffle-Funktion
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    // Spiel- oder Satzinitialisierung
+    function loadSentence() {
+        board.innerHTML = '';
+        pool.innerHTML = '';
+        feedback.textContent = '';
+        currentWordIndex = 0;
+
+        progressText.textContent = `Satz ${currentSentenceIndex + 1} von ${sentences.length}`;
+        activeSentence = sentences[currentSentenceIndex].correct;
+
+        // Kopieren und mischen
+        let shuffledWords = [...activeSentence];
+        
+        // Verhindern, dass der Satz zufällig schon direkt richtig daliegt
+        while (shuffledWords.every((val, i) => val === activeSentence[i]) && shuffledWords.length > 1) {
+            shuffle(shuffledWords);
+        }
+
+        // Kacheln im Pool erstellen
+        shuffledWords.forEach((word) => {
+            const tile = document.createElement('div');
+            tile.className = 'word-tile';
+            tile.textContent = word;
+            
+            tile.addEventListener('click', () => handleWordSelection(tile, word));
+            pool.appendChild(tile);
+        });
+    }
+
+    // Live-Überprüfung direkt beim Klick
+    function handleWordSelection(tile, word) {
+        // Erwartetes richtiges Wort ermitteln
+        const expectedWord = activeSentence[currentWordIndex];
+
+        if (word === expectedWord) {
+            // Richtiges Wort gewählt!
+            tile.classList.add('used'); // Unten verschwinden lassen
+            
+            // Neues Element oben auf dem Board erstellen
+            const boardTile = document.createElement('div');
+            boardTile.className = 'word-tile';
+            boardTile.textContent = word;
+            board.appendChild(boardTile);
+
+            currentWordIndex++;
+
+            // Prüfen, ob der aktuelle Satz komplett gelöst ist
+            if (currentWordIndex === activeSentence.length) {
+                if (currentSentenceIndex < sentences.length - 1) {
+                    feedback.textContent = "Отлично! Nächster Satz...";
+                    currentSentenceIndex++;
+                    setTimeout(loadSentence, 1200);
+                } else {
+                    feedback.textContent = "Великолепно! Du hast alle 5 Sätze fehlerfrei gelöst!";
+                }
+            }
+        } else {
+            // Falsches Wort gewählt -> Direktes negatives Feedback (Schüttel-Animation)
+            tile.classList.add('error-shake');
+            setTimeout(() => {
+                tile.classList.remove('error-shake');
+            }, 400);
+        }
+    }
+
+    // Komplett-Reset
+    function resetGame() {
+        currentSentenceIndex = 0;
+        loadSentence();
+    }
+
+    restartBtn.addEventListener('click', resetGame);
+
+    // Initialer Spielstart
+    loadSentence();
+</script>
+
+</body>
+</html>
