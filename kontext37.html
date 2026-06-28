@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Übung: Kontext & Angemessenheit</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .question-box {
+            background-color: #eaf2f8;
+            border-left: 5px solid var(--primary-color);
+            padding: 18px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #1b4f72;
+        }
+
+        /* Container für die großen Antwortkarten */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .option-card {
+            background-color: #ffffff;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .option-card:hover:not(.disabled) {
+            border-color: var(--primary-color);
+            background-color: #f8fafc;
+            transform: translateY(-1px);
+        }
+
+        .option-badge {
+            background-color: #f1f2f6;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        /* Zustände nach dem Klicken */
+        .option-card.correct {
+            border-color: var(--success-color);
+            background-color: #f0fdf4;
+        }
+        .option-card.correct .option-badge {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .option-card.wrong {
+            border-color: var(--error-color);
+            background-color: #fef2f2;
+        }
+        .option-card.wrong .option-badge {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .option-card.disabled {
+            cursor: default;
+            pointer-events: none;
+        }
+
+        /* Feedback-Bereich */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            min-height: 80px;
+        }
+
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .feedback.success { color: var(--success-color); }
+        .feedback.error { color: var(--error-color); }
+
+        .btn-restart {
+            background-color: var(--text-color);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            display: none;
+        }
+        .btn-restart:hover {
+            background-color: #34495e;
+        }
+
+        /* Smartphone-Optimierung */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px 15px;
+            }
+            h1 { font-size: 1.3rem; }
+            .question-text { font-size: 1rem; }
+            .option-text { font-size: 0.95rem; }
+            .option-card { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Sprachliche Angemessenheit 🤔</h1>
+    
+    <div class="question-box">
+        <p class="question-text">In welcher Situation sagt oder schreibt man im Russischen am besten „всё тип-топ“ (alles tipptopp)?</p>
+    </div>
+
+    <div class="options-container">
+        <div class="option-card" id="option-a">
+            <div class="option-badge">A</div>
+            <div class="option-text">Beim lockeren Gespräch mit Freunden oder Kollegen über den Job.</div>
+        </div>
+        
+        <div class="option-card" id="option-b">
+            <div class="option-badge">B</div>
+            <div class="option-text">In einem formellen, offiziellen Brief an den Chef oder eine Behörde.</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="feedback" id="feedback-text"></div>
+        <button class="btn-restart" id="restart-btn">Neustart</button>
+    </div>
+</div>
+
+<script>
+    const cardA = document.getElementById('option-a');
+    const cardB = document.getElementById('option-b');
+    const feedbackText = document.getElementById('feedback-text');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function handleSelection(selectedCard, isCorrect, explanation) {
+        // Beide Karten sperren
+        cardA.classList.add('disabled');
+        cardB.classList.add('disabled');
+
+        if (isCorrect) {
+            selectedCard.classList.add('correct');
+            feedbackText.textContent = "Правильно! " + explanation;
+            feedbackText.className = "feedback success";
+        } else {
+            selectedCard.classList.add('wrong');
+            feedbackText.textContent = "Nicht ganz. " + explanation;
+            feedbackText.className = "feedback error";
+            // Richtige Lösung zusätzlich markieren
+            cardA.classList.add('correct');
+        }
+
+        restartBtn.style.display = "block";
+    }
+
+    cardA.addEventListener('click', () => {
+        handleSelection(cardA, true, "„Всё тип-топ“ ist ein sehr umgangssprachlicher, umgezwungener Ausdruck. Er passt perfekt in den privaten Alltag und lockere Chats.");
+    });
+
+    cardB.addEventListener('click', () => {
+        handleSelection(cardB, false, "Das ist zu salopp. In formellen Briefen an Vorgesetzte sollte man neutrale Ausdrücke wie „Всё идёт отлично“ (Alles läuft ausgezeichnet) verwenden.");
+    });
+
+    restartBtn.addEventListener('click', () => {
+        cardA.className = "option-card";
+        cardB.className = "option-card";
+        feedbackText.textContent = "";
+        feedbackText.className = "feedback";
+        restartBtn.style.display = "none";
+    });
+</script>
+
+</body>
+</html>
