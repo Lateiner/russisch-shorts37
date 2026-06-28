@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Übung: Interaktive Flashcards</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .progress {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        /* 3D-Bühne für die Karteikarte */
+        .flashcard-wrapper {
+            width: 100%;
+            height: 250px;
+            perspective: 1000px;
+            margin-bottom: 25px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Das rotierende Element */
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            border-radius: 12px;
+        }
+
+        /* Drehung per Klasse */
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* Vorder- und Rückseite */
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Vorderseite (Russisch) */
+        .card-front {
+            background-color: #ffffff;
+            color: var(--text-color);
+        }
+
+        /* Rückseite (Deutsch) */
+        .card-back {
+            background-color: #eaf2f8;
+            color: #1b4f72;
+            transform: rotateY(180deg);
+        }
+
+        .lang-badge {
+            position: absolute;
+            top: 15px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background: #f1f2f6;
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: #7f8c8d;
+        }
+
+        .card-back .lang-badge {
+            background: #d4e6f1;
+            color: #2980b9;
+        }
+
+        .phrase-text {
+            font-size: 1.4rem;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .hint-text {
+            position: absolute;
+            bottom: 15px;
+            font-size: 0.8rem;
+            color: #95a5a6;
+        }
+
+        /* Navigation & Steuerung */
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: 15px;
+        }
+
+        .btn-nav {
+            background-color: #ffffff;
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-nav:hover:not(:disabled) {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background-color: #f8fafc;
+        }
+
+        .btn-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn-mix {
+            background-color: var(--text-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            flex-grow: 1;
+            max-width: 180px;
+            text-align: center;
+        }
+
+        .btn-mix:hover {
+            background-color: #34495e;
+        }
+
+        @media (max-width: 450px) {
+            .container { padding: 20px 15px; }
+            h1 { font-size: 1.3rem; }
+            .flashcard-wrapper { height: 210px; }
+            .phrase-text { font-size: 1.2rem; }
+            .btn-nav { width: 44px; height: 44px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Vokabel-Flashcards 🗂️</h1>
+    <div class="progress" id="progress-text">Karte 1 von 4</div>
+
+    <!-- Karteikarte -->
+    <div class="flashcard-wrapper" id="card-wrapper">
+        <div class="flashcard" id="flashcard">
+            
+            <!-- Vorderseite -->
+            <div class="card-face card-front">
+                <span class="lang-badge">Russisch</span>
+                <p class="phrase-text" id="text-front"></p>
+                <span class="hint-text">Zum Umdrehen tippen</span>
+            </div>
+
+            <!-- Rückseite -->
+            <div class="card-face card-back">
+                <span class="lang-badge">Deutsch</span>
+                <p class="phrase-text" id="text-back"></p>
+                <span class="hint-text">Zum Umdrehen tippen</span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Navigationsleiste -->
+    <div class="controls">
+        <button class="btn-nav" id="prev-btn" aria-label="Vorherige Karte">◀</button>
+        <button class="btn-mix" id="mix-btn">Mischen</button>
+        <button class="btn-nav" id="next-btn" aria-label="Nächste Karte">▶</button>
+    </div>
+</div>
+
+<script>
+    // Die 4 gewünschten Lernkarten
+    const initialCards = [
+        { ru: "Как у тебя дела?", de: "Wie geht es dir?" },
+        { ru: "Всё тип-топ!", de: "Alles tipptopp!" },
+        { ru: "Как у тебя дела на работе?", de: "Wie läuft es bei dir auf der Arbeit?" },
+        { ru: "А у тебя как?", de: "Und wie sieht es bei dir aus?" }
+    ];
+
+    let cards = [...initialCards];
+    let currentIndex = 0;
+
+    const flashcard = document.getElementById('flashcard');
+    const cardWrapper = document.getElementById('card-wrapper');
+    const textFront = document.getElementById('text-front');
+    const textBack = document.getElementById('text-back');
+    const progressText = document.getElementById('progress-text');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const mixBtn = document.getElementById('mix-btn');
+
+    function updateCardDisplay() {
+        // Zuerst Karte zurückdrehen, falls sie umgedreht war
+        flashcard.classList.remove('is-flipped');
+        
+        // Kleine Verzögerung für den Textwechsel, falls die Karte gerade zurückgedreht wurde
+        setTimeout(() => {
+            textFront.textContent = cards[currentIndex].ru;
+            textBack.textContent = cards[currentIndex].de;
+            progressText.textContent = `Karte ${currentIndex + 1} von ${cards.length}`;
+            
+            // Buttons aktivieren/deaktivieren je nach Position
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === cards.length - 1;
+        }, 150);
+    }
+
+    // Klick-Event zum Umdrehen der Karte
+    cardWrapper.addEventListener('click', () => {
+        flashcard.classList.toggle('is-flipped');
+    });
+
+    // Navigation: Vorwärts
+    nextBtn.addEventListener('click', () => {
+        if (currentIndex < cards.length - 1) {
+            currentIndex++;
+            updateCardDisplay();
+        }
+    });
+
+    // Navigation: Rückwärts
+    prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateCardDisplay();
+        }
+    });
+
+    // Mischen-Funktion
+    mixBtn.addEventListener('click', () => {
+        // Array zufällig sortieren
+        cards.sort(() => Math.random() - 0.5);
+        currentIndex = 0;
+        updateCardDisplay();
+    });
+
+    // Initialisierung beim Laden
+    updateCardDisplay();
+</script>
+
+</body>
+</html>
