@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Übung: Chat-Hotspot erweitert</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #cbd5e1;
+            --chat-bg: #e5ddd5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        p.instruction {
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Smartphone-Mockup Chat-Verlauf */
+        .phone-mockup {
+            background-color: var(--chat-bg);
+            border: 8px solid #2c3e50;
+            border-radius: 24px;
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            max-height: 550px;
+            overflow-y: auto;
+        }
+
+        /* Allgemeine Sprechblasen-Formatierung */
+        .bubble {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 1rem;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Nachrichten von anderen Personen (Links) */
+        .bubble.partner {
+            background-color: #ffffff;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            color: #000000;
+        }
+
+        /* Nachricht von einer dritten Person im Gruppenchat */
+        .bubble.anna {
+            background-color: #eaf2f8;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            color: #1b4f72;
+            font-style: italic;
+        }
+
+        /* Optionale Absendernamen für den Gruppenchat */
+        .sender-name {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #e67e22;
+            margin-bottom: 2px;
+            display: block;
+        }
+        .anna .sender-name { color: #2980b9; }
+
+        /* Die interaktiven Hotspots / Auswahl-Optionen (Rechts) */
+        .bubble.hotspot {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            border: 2px solid transparent;
+            font-weight: 500;
+        }
+
+        .bubble.hotspot:hover:not(.disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+            border-color: var(--primary-color);
+        }
+
+        /* Farb-Feedback */
+        .bubble.hotspot.correct {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .bubble.hotspot.wrong {
+            background-color: var(--error-color);
+            color: white;
+            border-color: var(--error-color);
+        }
+
+        .bubble.disabled {
+            cursor: default;
+            pointer-events: none;
+        }
+
+        /* Steuerung & Feedback */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            min-height: 85px;
+        }
+
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .feedback.success { color: var(--success-color); }
+        .feedback.error { color: var(--error-color); }
+
+        .btn-restart {
+            background-color: var(--text-color);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            font-size: 0.95rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            display: none;
+        }
+        .btn-restart:hover { background-color: #34495e; }
+
+        @media (max-width: 400px) {
+            .container { padding: 15px; }
+            h1 { font-size: 1.25rem; }
+            .bubble { font-size: 0.9rem; padding: 8px 12px; }
+            .phone-mockup { border-width: 5px; padding: 12px 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gruppenchat-Hotspot 📱</h1>
+    <p class="instruction">Lies den Chatverlauf. Klicke am Ende auf die richtige Sprechblase, um passend und positiv zu antworten!</p>
+
+    <div class="phone-mockup" id="chat-window">
+        <!-- Satz 1 (Vorgegeben) -->
+        <div class="bubble partner">
+            <span class="sender-name">Maxim</span>
+            Привет! Как у тебя дела на работе?
+        </div>
+        
+        <!-- Satz 2 (Vorgegeben) -->
+        <div class="bubble anna">
+            <span class="sender-name">Anna</span>
+            Привет всем! У меня всё отлично, куча новых проектов! 🚀
+        </div>
+
+        <!-- Satz 3 (Vorgegeben) -->
+        <div class="bubble partner">
+            <span class="sender-name">Maxim</span>
+            Круто! Рад за тебя, Анна. Илья, а у тебя как? Как офис?
+        </div>
+
+        <!-- Satz 4 (Hier muss der Schüler interaktiv die beste Sprechblase wählen) -->
+        <!-- Die Auswahl-Hotspots werden per JavaScript dynamisch erzeugt -->
+    </div>
+
+    <div class="controls">
+        <div class="feedback" id="feedback-text"></div>
+        <button class="btn-restart" id="restart-btn">Neustart</button>
+    </div>
+</div>
+
+<script>
+    // Optionen für den Hotspot am Ende des vergrößerten Chats
+    const options = [
+        { text: "Всё тип-топ! А у тебя как? 😎", isCorrect: true, explanation: "Отлично! „Всё тип-топ!“ passt perfekt in diesen lockeren Gruppenchat unter Freunden." },
+        { text: "Я не хочу работать сегодня. 🥱", isCorrect: false, explanation: "Nicht ganz richtig. Das bedeutet „Ich will heute nicht arbeiten“ – passt nicht als direkte Antwort auf Maxims Frage." },
+        { text: "На работе всё очень плохо. 📉", isCorrect: false, explanation: "Leider falsch. Das bedeutet „Auf der Arbeit ist alles sehr schlecht“ – gesucht war die positive Formulierung." }
+    ];
+
+    const chatWindow = document.getElementById('chat-window');
+    const feedbackText = document.getElementById('feedback-text');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function initGame() {
+        // Entferne nur die dynamischen Hotspots am Ende
+        const hotspots = chatWindow.querySelectorAll('.hotspot');
+        hotspots.forEach(h => h.remove());
+
+        feedbackText.textContent = "";
+        feedbackText.className = "feedback";
+        restartBtn.style.display = "none";
+
+        // Optionen mischen
+        const shuffled = [...options].sort(() => Math.random() - 0.5);
+
+        // Neue interaktive Sprechblasen am Ende einfügen
+        shuffled.forEach(opt => {
+            const div = document.createElement('div');
+            div.className = "bubble hotspot";
+            div.textContent = opt.text;
+            
+            div.addEventListener('click', () => handleHotspotClick(div, opt));
+            chatWindow.appendChild(div);
+        });
+
+        // Automatisch nach unten scrollen bei Initialisierung
+        setTimeout(() => {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }, 50);
+    }
+
+    function handleHotspotClick(clickedElement, optionObj) {
+        const allHotspots = chatWindow.querySelectorAll('.hotspot');
+        
+        allHotspots.forEach(h => h.classList.add('disabled'));
+
+        if (optionObj.isCorrect) {
+            clickedElement.classList.add('correct');
+            feedbackText.textContent = optionObj.explanation;
+            feedbackText.className = "feedback success";
+        } else {
+            clickedElement.classList.add('wrong');
+            feedbackText.textContent = optionObj.explanation;
+            feedbackText.className = "feedback error";
+
+            // Richtige Lösung grün markieren zur Hilfestellung
+            allHotspots.forEach(h => {
+                const associatedOption = options.find(o => o.text === h.textContent);
+                if (associatedOption && associatedOption.isCorrect) {
+                    h.classList.add('correct');
+                }
+            });
+        }
+
+        restartBtn.style.display = "block";
+    }
+
+    restartBtn.addEventListener('click', initGame);
+
+    // Initialer Start beim Laden der Seite
+    initGame();
+</script>
+
+</body>
+</html>
